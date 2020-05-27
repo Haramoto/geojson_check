@@ -1,19 +1,30 @@
 <template>
-  <div id="app">
-    <Map msg="Welcome to Your Vue.js + TypeScript App" />
+  <div id="app" class="vh-100">
+    <div class="row h-100 no-gutters">
+      <div class="col h-100">
+        <Map :geojson="geojson" />
+      </div>
+      <div class="col h-100">
+        <Editor v-model="geojson" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import Map from "./components/Map.vue";
+import Editor from "./components/Editor.vue";
 
 @Component({
   components: {
     Map,
+    Editor,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  geojson = "";
+}
 </script>
 
 <style lang="scss">
@@ -23,6 +34,5 @@ export default class App extends Vue {}
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
