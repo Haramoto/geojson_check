@@ -1,10 +1,10 @@
 <template>
-  <codemirror
-    v-model="code"
-    :options="cmOptions"
-    ref="cm"
-    class="h-100"
-  ></codemirror>
+  <div class="d-flex w-100 h-100 flex-column">
+    <div class="row no-gutters" style="height: 40px;">
+      <button class="btn btn-primary" @click="format">Format</button>
+    </div>
+    <codemirror v-model="code" :options="cmOptions" ref="cm" class="h-100" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -17,8 +17,17 @@ import "codemirror/addon/fold/foldcode.js";
 import "codemirror/addon/fold/brace-fold.js";
 import "codemirror/addon/fold/foldgutter.js";
 import "codemirror/addon/fold/foldgutter.css";
-import "codemirror/theme/monokai.css";
+import "codemirror/addon/edit/closebrackets";
+import "codemirror/addon/lint/lint.css";
+import "codemirror/addon/lint/lint";
+import "codemirror/addon/lint/json-lint";
 import { Throttle } from "lodash-decorators";
+
+const prettier = require("prettier/standalone");
+const prettierBabylon = require("prettier/parser-babel");
+
+const jsonlint = require("jsonlint-mod");
+window.jsonlint = jsonlint;
 
 @Component({
   components: {
@@ -35,13 +44,14 @@ export default class EditorTag extends Vue {
     theme: "default",
     lineNumbers: true,
     lineWrapping: true,
-    tabSize: 4,
-    indentUnit: 4,
+    tabSize: 2,
+    indentUnit: 2,
     indentWithTabs: false,
     cursorScrollMargin: 50,
     autoCloseBrackets: true,
     foldGutter: true,
-    gutters: ["CodeMirror-foldgutter"],
+    gutters: ["CodeMirror-lint-markers", "CodeMirror-foldgutter"],
+    lint: true,
   };
 
   @Throttle(500)
@@ -55,6 +65,15 @@ export default class EditorTag extends Vue {
   private set code(value: string) {
     this.input(value);
   }
+
+  private format() {
+    let value = prettier.format(this.code, {
+      parser: "json",
+      plugins: [prettierBabylon],
+    });
+    this.code = value;
+    this.$forceUpdate();
+  }
 }
 </script>
 
@@ -62,7 +81,8 @@ export default class EditorTag extends Vue {
 <style lang="scss">
 .CodeMirror {
   /* Set height, width, borders, and global font properties here */
-  font-family: monospace;
+  font-family: Monaco, "Andale Mono", "Lucida Console",
+    "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
   height: 100%;
   text-align: left;
 

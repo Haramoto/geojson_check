@@ -23,7 +23,7 @@ import Editor from "./components/Editor.vue";
   },
 })
 export default class App extends Vue {
-  geojson = "";
+  geojson = "{}";
 }
 </script>
 
