@@ -4,7 +4,7 @@
     <div
       class="position-absolute alert alert-danger"
       v-if="hasError"
-      style="top:0px;right:0px"
+      style="top: 0px; right: 0px;"
     >
       GeoJSON Error
     </div>
@@ -19,9 +19,16 @@ import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
+import Style from "ol/style/Style";
+import Text from "ol/style/Text";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
 import GeoJSON from "ol/format/GeoJSON";
+import Feature from "ol/Feature";
 
 import "ol/ol.css";
+
+const color = "#543f32";
 
 @Component({})
 export default class MapTag extends Vue {
@@ -29,18 +36,18 @@ export default class MapTag extends Vue {
   private geojson!: string;
 
   private map: Map | null = null;
-  private vector_source: VectorSource = new VectorSource({
+  private vectorSource = new VectorSource({
     format: new GeoJSON(),
-    projection: "EPSG:3857",
   });
 
-  private vector: VectorLayer = new VectorLayer({
-    source: this.vector_source,
+  private vector = new VectorLayer({
+    source: this.vectorSource,
+    style: this.styleFunction as any,
   });
 
   private hasError = false;
 
-  mounted() {
+  private mounted() {
     this.map = new Map({
       view: new View({
         center: [0, 0],
@@ -60,14 +67,14 @@ export default class MapTag extends Vue {
    * JSONの読み込み
    */
   @Watch("geojson")
-  readJson() {
+  private readJson() {
     if (!this.map) {
       return;
     }
     try {
-      let json = JSON.parse(this.geojson);
+      const json = JSON.parse(this.geojson);
       // GeoJSONをOpenlayersのfeatureに変換
-      let features: any[] = this.vector
+      const features: any[] = this.vector
         .getSource()
         .getFormat()
         .readFeatures(json, { featureProjection: "EPSG:3857" });
@@ -78,12 +85,40 @@ export default class MapTag extends Vue {
       this.vector.getSource().addFeatures(features);
 
       // 描画領域を表示
-      let extent = this.vector.getSource().getExtent();
-      this.map.getView().fit(extent, { maxZoom: 18 });
+      const extent = this.vector.getSource().getExtent();
+      this.map
+        .getView()
+        .fit(extent, { maxZoom: 18, padding: [50, 50, 50, 50] });
       this.hasError = false;
     } catch (e) {
       this.hasError = true;
     }
+  }
+
+  private styleFunction(feature: Feature): Style {
+    if (
+      feature.getGeometry().getType() === "Point" ||
+      feature.getGeometry().getType() === "MultiPoint"
+    ) {
+      return new Style({
+        text: new Text({
+          text: "\uF041",
+          font: "normal 35px FontAwesome",
+          fill: new Fill({
+            color,
+          }),
+        }),
+      });
+    }
+    return new Style({
+      stroke: new Stroke({
+        width: 3,
+        color,
+      }),
+      fill: new Fill({
+        color: "rgba(1,1,1,0.2)",
+      }),
+    });
   }
 }
 </script>

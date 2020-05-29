@@ -27,7 +27,7 @@ const prettier = require("prettier/standalone");
 const prettierBabylon = require("prettier/parser-babel");
 
 const jsonlint = require("jsonlint-mod");
-window.jsonlint = jsonlint;
+(window as any).jsonlint = jsonlint;
 
 @Component({
   components: {
